@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "usuarios",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "perfilCompleto", "order": "ASCENDING"},
+        {"fieldPath": "rol", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "usuarios",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "verificado", "order": "ASCENDING"},
+        {"fieldPath": "rol", "order": "ASCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

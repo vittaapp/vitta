@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "198064451197",
+    "project_id": "vitta-app-6d44f",
+    "storage_bucket": "vitta-app-6d44f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198064451197:android:0f4dbeacc4ffd50a0a4b14",
+        "android_client_info": {
+          "package_name": "com.example.vitta_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "198064451197-iqv0dlsfa5m52v4t5cghohie4qkdis8d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.vitta_app",
+            "certificate_hash": "f8eb7d3542eda17394ac3521df4eba820ec241d4"
+          }
+        },
+        {
+          "client_id": "198064451197-ao4g307ig04fe6jv0iea37jbt3u8a304.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvA81veubOAwZXbW0rCByvCu7zHjtT0bo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "198064451197-ao4g307ig04fe6jv0iea37jbt3u8a304.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "198064451197-m4mat8c87blkqsk06qeerqr21r2q1ulo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.vittaApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

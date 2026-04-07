@@ -1,0 +1,219 @@
+rules_version = '2';
+
+// Reglas maestras Firestore — Vitta Salud
+// - usuarios: perfil propio (login, registro email/Google, actualización)
+// - pacientes: datos ligados al familiar (campo familiarId)
+// - historial_clinico: solo create/read; create solo enfermero_n3 o medico
+//
+// Despliegue: firebase deploy --only firestore:rules
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function esPropietarioUsuario(userId) {
+      return autenticado() && request.auth.uid == userId;
+    }
+
+    /// Rol en `usuarios/{uid}` (AuthService / Usuario.toMap).
+    function rolUsuario() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol;
+    }
+
+    function puedeCrearHistorialClinico() {
+      return autenticado()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && rolUsuario() in ['profesional', 'enfermero_n3', 'medico'];
+    }
+
+    function esMedico() {
+      return autenticado()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && rolUsuario() == 'medico';
+    }
+
+    function esProfesionalTurno() {
+      return autenticado()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && rolUsuario() in ['profesional', 'enfermero_n3', 'medico'];
+    }
+
+    function esAdmin() {
+      return autenticado()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && rolUsuario() == 'admin';
+    }
+
+    // Coincide con pacientes.nivelCuidado / TurnoService.nivelProfesionalDesdeRol.
+    function nivelProfesionalUsuario() {
+      let r = rolUsuario();
+      return r == 'profesional' ? 1
+        : r == 'enfermero_n3' ? 3
+        : r == 'medico' ? 2
+        : 0;
+    }
+
+    function profesionalIdVacio(data) {
+      return !('profesionalId' in data) || data.profesionalId == null || data.profesionalId == '';
+    }
+
+    function puedeLeerTurnoComoProfesional(data) {
+      return esProfesionalTurno()
+        && data.nivelRequerido == nivelProfesionalUsuario()
+        && (data.profesionalId == request.auth.uid || profesionalIdVacio(data));
+    }
+
+    // --- Perfil de cuenta (Firebase Auth uid = id del documento) ---
+    match /usuarios/{userId} {
+      // Propietario o admin (panel de aprobaciones; vitta_rules)
+      allow read: if esPropietarioUsuario(userId) || esAdmin();
+
+      // Registro: .set() al crear cuenta; Google/familiar/profesional crean su doc
+      allow create: if esPropietarioUsuario(userId);
+
+      // Perfil propio o verificación / rechazo por admin
+      allow update: if esPropietarioUsuario(userId) || esAdmin();
+
+      allow delete: if false;
+    }
+
+    // --- Paciente (vitta_rules: pacientes/{id} con familiarId) ---
+    // Cuando migres el perfil desde SharedPreferences a Firestore, el doc debe incluir familiarId.
+    match /pacientes/{pacienteId} {
+      allow read: if autenticado()
+        && resource.data.familiarId == request.auth.uid;
+
+      allow create: if autenticado()
+        && request.resource.data.familiarId == request.auth.uid;
+
+      allow update: if autenticado()
+        && resource.data.familiarId == request.auth.uid;
+
+      allow delete: if autenticado()
+        && resource.data.familiarId == request.auth.uid;
+    }
+
+    // --- Historial clínico (colección top-level; inmutable tras crear) ---
+    match /historial_clinico/{document=**} {
+      allow read: if autenticado();
+
+      allow create: if puedeCrearHistorialClinico();
+
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // --- Turnos: familiar crea solicitud; profesional lee/actualiza si coincide nivel ---
+    match /turnos/{turnoId} {
+      allow read: if autenticado()
+        && (
+          resource.data.familiarId == request.auth.uid
+          || puedeLeerTurnoComoProfesional(resource.data)
+        );
+
+      allow create: if autenticado()
+        && request.resource.data.familiarId == request.auth.uid
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.profesionalId == '';
+
+      allow update: if autenticado() && (
+        // Profesional: puede actualizar su turno asignado (aceptado/activo/etc).
+        (
+          esProfesionalTurno()
+          && resource.data.nivelRequerido == nivelProfesionalUsuario()
+          && resource.data.profesionalId == request.auth.uid
+        )
+        ||
+        // Profesional: acepta una solicitud pendiente (profesionalId vacío → profesionalId actual, estado aceptado).
+        (
+          esProfesionalTurno()
+          && resource.data.estado == 'pendiente'
+          && profesionalIdVacio(resource.data)
+          && resource.data.nivelRequerido == nivelProfesionalUsuario()
+          && request.resource.data.familiarId == resource.data.familiarId
+          && request.resource.data.pacienteId == resource.data.pacienteId
+          && request.resource.data.nivelRequerido == resource.data.nivelRequerido
+          && request.resource.data.profesionalId == request.auth.uid
+          && request.resource.data.estado == 'aceptado'
+        )
+        ||
+        // Familiar: cancela una solicitud pendiente propia.
+        (
+          resource.data.familiarId == request.auth.uid
+          && resource.data.estado == 'pendiente'
+          && request.resource.data.familiarId == resource.data.familiarId
+          && request.resource.data.pacienteId == resource.data.pacienteId
+          && request.resource.data.nivelRequerido == resource.data.nivelRequerido
+          && request.resource.data.profesionalId == resource.data.profesionalId
+          && request.resource.data.estado == 'cancelado'
+        )
+      );
+
+      allow delete: if false;
+    }
+
+    // --- Chat interno (turno): solo familiar/profesional del turno padre ---
+    function puedeParticiparEnChat(turnoId) {
+      return autenticado()
+        && exists(/databases/$(database)/documents/turnos/$(turnoId))
+        && (
+          get(/databases/$(database)/documents/turnos/$(turnoId)).data.familiarId
+            == request.auth.uid
+          ||
+          get(/databases/$(database)/documents/turnos/$(turnoId)).data.profesionalId
+            == request.auth.uid
+        );
+    }
+
+    match /chats/{turnoId}/mensajes/{mensajeId} {
+      allow read: if puedeParticiparEnChat(turnoId);
+      allow create: if puedeParticiparEnChat(turnoId)
+        && request.resource.data.remitenteId == request.auth.uid;
+      allow update: if puedeParticiparEnChat(turnoId)
+        && request.resource.data.remitenteId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // --- Notificaciones push pendientes (procesadas por backend en Fase 2) ---
+    match /notificaciones_pendientes/{notificacionId} {
+      // Profesional en turno o admin (rechazo de perfil; vitta_rules)
+      allow create: if (
+          esProfesionalTurno()
+          || esAdmin()
+        )
+        && request.resource.data.destinatarioId is string
+        && request.resource.data.token is string
+        && request.resource.data.titulo is string
+        && request.resource.data.cuerpo is string
+        && request.resource.data.tipo is string;
+
+      // El destinatario puede leer sus propias notificaciones.
+      allow read: if autenticado()
+        && resource.data.destinatarioId == request.auth.uid;
+
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // --- Indicaciones médicas (solo médico escribe; vitta_rules) ---
+    match /indicaciones_medicas/{id} {
+      allow read: if autenticado();
+      allow create: if esMedico();
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // --- Resúmenes diarios (familiar del paciente; vitta_rules) ---
+    match /resumenes_diarios/{docId} {
+      allow read: if autenticado()
+        && (!resource.exists || resource.data.familiarId == request.auth.uid);
+      allow create, update: if autenticado()
+        && request.resource.data.familiarId == request.auth.uid
+        && request.resource.data.pacienteId is string;
+      allow delete: if false;
+    }
+  }
+}

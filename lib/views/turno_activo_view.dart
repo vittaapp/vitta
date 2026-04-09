@@ -11,7 +11,7 @@ import '../models/turno_activo_parametros.dart';
 import '../providers/usuario_rol_provider.dart';
 import '../services/historial_service.dart';
 import '../services/turno_service.dart';
-import 'chat_turno_view.dart';
+import '../widgets/chat/chat_view.dart';
 
 /// Colores — cursor_rules / vitta_rules.
 const Color _azulVitta = Color(0xFF1A3E6F);
@@ -397,9 +397,9 @@ class _TurnoActivoViewState extends ConsumerState<TurnoActivoView> {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute<void>(
-              builder: (_) => ChatTurnoView(
+              builder: (_) => ChatViewWidget(
                 turnoId: widget.parametros.turnoId,
-                nombrePaciente: widget.parametros.nombrePaciente,
+                permitirEnvio: true,
               ),
             ),
           );

@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/entities/chat_message_entity.dart';
 import '../models/usuario_model.dart' show RolesVitta;
+import '../providers/chat_provider.dart' show chatServiceProvider;
 import '../providers/usuario_rol_provider.dart' show authStateProvider, usuarioActualProvider;
-import '../services/chat_service.dart';
 
 const Color _azulVitta = Color(0xFF1A3E6F);
 const Color _bordeOtro = Color(0xFFBBDEFB);
@@ -36,13 +37,9 @@ class _ChatTurnoViewState extends ConsumerState<ChatTurnoView> {
     super.dispose();
   }
 
-  String _fmtHora(dynamic timestamp) {
-    DateTime? d;
-    if (timestamp is Timestamp) d = timestamp.toDate();
-    if (timestamp is DateTime) d = timestamp;
-    if (d == null) return '—';
-    final h = d.hour.toString().padLeft(2, '0');
-    final m = d.minute.toString().padLeft(2, '0');
+  String _fmtHora(DateTime timestamp) {
+    final h = timestamp.hour.toString().padLeft(2, '0');
+    final m = timestamp.minute.toString().padLeft(2, '0');
     return '$h:$m';
   }
 
@@ -80,7 +77,7 @@ class _ChatTurnoViewState extends ConsumerState<ChatTurnoView> {
           return Column(
             children: [
               Expanded(
-                child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                child: StreamBuilder<List<ChatMessageEntity>>(
                   stream: chatService.obtenerMensajes(widget.turnoId),
                   builder: (context, msgSnap) {
                     if (msgSnap.connectionState == ConnectionState.waiting) {
@@ -88,12 +85,12 @@ class _ChatTurnoViewState extends ConsumerState<ChatTurnoView> {
                         child: CircularProgressIndicator(color: _azulVitta),
                       );
                     }
-                    final docs = msgSnap.data?.docs ?? [];
+                    final msgs = msgSnap.data ?? [];
 
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (!mounted) return;
-                      if (docs.length == _lastMsgCount) return;
-                      _lastMsgCount = docs.length;
+                      if (msgs.length == _lastMsgCount) return;
+                      _lastMsgCount = msgs.length;
                       if (_scrollCtrl.hasClients) {
                         _scrollCtrl.animateTo(
                           _scrollCtrl.position.maxScrollExtent,
@@ -103,7 +100,7 @@ class _ChatTurnoViewState extends ConsumerState<ChatTurnoView> {
                       }
                     });
 
-                    if (docs.isEmpty) {
+                    if (msgs.isEmpty) {
                       return const Center(
                         child: Padding(
                           padding: EdgeInsets.all(24),
@@ -121,21 +118,15 @@ class _ChatTurnoViewState extends ConsumerState<ChatTurnoView> {
                         horizontal: 12,
                         vertical: 18,
                       ),
-                      itemCount: docs.length,
+                      itemCount: msgs.length,
                       itemBuilder: (context, idx) {
-                        final m = docs[idx].data();
-                        final texto = (m['texto'] as String? ?? '').trim();
-                        final remitenteId = (m['remitenteId'] as String? ?? '');
-                        final nombreRemitente =
-                            (m['nombreRemitente'] as String? ?? '').trim();
-                        final timestamp = m['timestamp'];
-                        final esPropio = uid != null && remitenteId == uid;
-
+                        final m = msgs[idx];
+                        final esPropio = uid != null && m.remitenteId == uid;
                         return _BurbujasMensaje(
-                          texto: texto,
+                          texto: m.texto,
                           esPropio: esPropio,
-                          nombreRemitente: nombreRemitente,
-                          hora: _fmtHora(timestamp),
+                          nombreRemitente: m.nombreRemitente,
+                          hora: _fmtHora(m.timestamp),
                         );
                       },
                     );
@@ -162,7 +153,6 @@ class _ChatTurnoViewState extends ConsumerState<ChatTurnoView> {
                     await chatService.enviarMensaje(
                       turnoId: widget.turnoId,
                       texto: t,
-                      remitenteId: uid,
                       nombreRemitente: nombreRemitente,
                     );
                     _textCtrl.clear();
@@ -192,8 +182,6 @@ class _ChatTurnoViewState extends ConsumerState<ChatTurnoView> {
     );
   }
 }
-
-final chatServiceProvider = Provider<ChatService>((ref) => ChatService());
 
 class _TituloInterlocutor extends StatelessWidget {
   const _TituloInterlocutor({

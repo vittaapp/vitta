@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 
 import '../models/bandeja_perfil_profesional.dart';
+import '../models/entities/profesional_entity.dart';
 import '../models/perfil_paciente_registro.dart';
-import '../models/profesional_lista_item.dart';
 import '../utils/geo_tucuman.dart';
 import 'profesional_detalle_view.dart';
+
+BandejaPerfilProfesional _bandejaDesdeTipo(TipoProfesional tipo) {
+  switch (tipo) {
+    case TipoProfesional.enfermeroUniversitario:
+      return BandejaPerfilProfesional.verde;
+    case TipoProfesional.auxiliarEnfermeria:
+      return BandejaPerfilProfesional.amarillo;
+    case TipoProfesional.cuidadorDomiciliario:
+      return BandejaPerfilProfesional.celeste;
+  }
+}
 
 /// Lista de profesionales con orden según la necesidad del paciente y bandeja de perfil.
 class ListaCuidadoresView extends StatefulWidget {
@@ -25,16 +36,18 @@ class _ListaCuidadoresViewState extends State<ListaCuidadoresView> {
     return altas.contains(necesidad);
   }
 
-  static List<ProfesionalListaItem> _datosDemo() {
+  static List<ProfesionalEntity> _datosDemo() {
     return [
-      ProfesionalListaItem(
+      ProfesionalEntity(
         id: '1',
         nombre: 'Dra. Ana Pérez',
+        email: '',
+        rol: 'profesional',
+        tipo: TipoProfesional.enfermeroUniversitario,
         especialidad: 'Lic. en Enfermería · Matrícula verificada',
         fotoUrl: 'https://i.pravatar.cc/300?img=5',
-        bandeja: BandejaPerfilProfesional.verde,
-        semaforoConfianzaVerde: true,
-        fuerte: 'Especialista en movilidad y recuperación post-quirúrgica',
+        identidadValidada: true,
+        fortaleza: 'Especialista en movilidad y recuperación post-quirúrgica',
         biografia:
             'Enfermera universitaria con más de 12 años en cuidado domiciliario y hospitalario. '
             'Me enfoco en adultos mayores y post-operatorio, con comunicación clara con la familia.',
@@ -49,14 +62,16 @@ class _ListaCuidadoresViewState extends State<ListaCuidadoresView> {
         disponibilidadTarde: true,
         disponibilidadNoche: false,
       ),
-      ProfesionalListaItem(
+      ProfesionalEntity(
         id: '2',
         nombre: 'Lic. Roberto Sanz',
+        email: '',
+        rol: 'profesional',
+        tipo: TipoProfesional.enfermeroUniversitario,
         especialidad: 'Enfermería · Post-operatorio y cuidados críticos',
         fotoUrl: 'https://i.pravatar.cc/300?img=12',
-        bandeja: BandejaPerfilProfesional.verde,
-        semaforoConfianzaVerde: true,
-        fuerte: 'Puntualidad 100% en controles y visitas',
+        identidadValidada: true,
+        fortaleza: 'Puntualidad 100% en controles y visitas',
         biografia:
             'Acompaño procesos de alta complejidad en el hogar: controles frecuentes, coordinación con médico tratante '
             'y registro claro para la familia.',
@@ -71,14 +86,16 @@ class _ListaCuidadoresViewState extends State<ListaCuidadoresView> {
         disponibilidadTarde: true,
         disponibilidadNoche: true,
       ),
-      ProfesionalListaItem(
+      ProfesionalEntity(
         id: '3',
         nombre: 'Lucía Torres',
+        email: '',
+        rol: 'profesional',
+        tipo: TipoProfesional.auxiliarEnfermeria,
         especialidad: 'Estudiante avanzada de Enfermería (UNT)',
         fotoUrl: 'https://i.pravatar.cc/300?img=9',
-        bandeja: BandejaPerfilProfesional.amarillo,
-        semaforoConfianzaVerde: false,
-        fuerte: 'Gran predisposición y calma en el día a día',
+        identidadValidada: false,
+        fortaleza: 'Gran predisposición y calma en el día a día',
         biografia:
             'Estudiante de últimos años con práctica en geriatría. Busco acompañar con paciencia y buenos hábitos de hidratación y movilidad.',
         etiquetas: const ['Movilización', 'Acompañamiento', 'Pediatría básica', 'Primeros auxilios'],
@@ -92,14 +109,16 @@ class _ListaCuidadoresViewState extends State<ListaCuidadoresView> {
         disponibilidadTarde: true,
         disponibilidadNoche: false,
       ),
-      ProfesionalListaItem(
+      ProfesionalEntity(
         id: '4',
         nombre: 'Carlos Gómez',
+        email: '',
+        rol: 'profesional',
+        tipo: TipoProfesional.cuidadorDomiciliario,
         especialidad: 'Cuidador geriátrico · Acompañamiento terapéutico',
         fotoUrl: 'https://i.pravatar.cc/300?img=14',
-        bandeja: BandejaPerfilProfesional.celeste,
-        semaforoConfianzaVerde: false,
-        fuerte: 'Gran predisposición · paseos y farmacia sin apuro',
+        identidadValidada: false,
+        fortaleza: 'Gran predisposición · paseos y farmacia sin apuro',
         biografia:
             'Más de 8 años con adultos mayores. Trabajo en estimulación cognitiva simple, contención emocional y rutinas seguras en el hogar.',
         etiquetas: const ['Geriatría', 'Demencias leves', 'Paseos', 'Higiene asistida'],
@@ -113,14 +132,16 @@ class _ListaCuidadoresViewState extends State<ListaCuidadoresView> {
         disponibilidadTarde: false,
         disponibilidadNoche: false,
       ),
-      ProfesionalListaItem(
+      ProfesionalEntity(
         id: '5',
         nombre: 'Marta López',
+        email: '',
+        rol: 'profesional',
+        tipo: TipoProfesional.auxiliarEnfermeria,
         especialidad: 'Auxiliar de enfermería',
         fotoUrl: 'https://i.pravatar.cc/300?img=16',
-        bandeja: BandejaPerfilProfesional.amarillo,
-        semaforoConfianzaVerde: false,
-        fuerte: 'Puntualidad 100% en medicación y curaciones',
+        identidadValidada: false,
+        fortaleza: 'Puntualidad 100% en medicación y curaciones',
         biografia:
             'Auxiliar matriculada con experiencia en clínica y domicilio. Me gusta ordenar medicación y dejar indicaciones por escrito a la familia.',
         etiquetas: const ['Inyectables', 'Curaciones', 'Signos vitales', 'Geriatría'],
@@ -134,14 +155,16 @@ class _ListaCuidadoresViewState extends State<ListaCuidadoresView> {
         disponibilidadTarde: true,
         disponibilidadNoche: true,
       ),
-      ProfesionalListaItem(
+      ProfesionalEntity(
         id: '6',
         nombre: 'Lic. Marcos Paz',
+        email: '',
+        rol: 'profesional',
+        tipo: TipoProfesional.enfermeroUniversitario,
         especialidad: 'Lic. en Enfermería · SIPROSA',
         fotoUrl: 'https://i.pravatar.cc/300?img=3',
-        bandeja: BandejaPerfilProfesional.verde,
-        semaforoConfianzaVerde: true,
-        fuerte: 'Especialista en movilidad y educación en patologías crónicas',
+        identidadValidada: true,
+        fortaleza: 'Especialista en movilidad y educación en patologías crónicas',
         biografia:
             'Enfermero con fuerte foco en Tucumán: seguimiento de patologías crónicas, educación al paciente y vínculo con obra social cuando hace falta.',
         etiquetas: const ['Geriatría', 'Diabetes', 'Hipertensión', 'Inyectables', 'RCP'],
@@ -158,8 +181,8 @@ class _ListaCuidadoresViewState extends State<ListaCuidadoresView> {
     ];
   }
 
-  static List<ProfesionalListaItem> _ordenarPorMejorCalificacion(List<ProfesionalListaItem> lista) {
-    final copia = List<ProfesionalListaItem>.from(lista);
+  static List<ProfesionalEntity> _ordenarPorMejorCalificacion(List<ProfesionalEntity> lista) {
+    final copia = List<ProfesionalEntity>.from(lista);
     copia.sort((a, b) {
       final cmp = b.calificacionPromedio.compareTo(a.calificacionPromedio);
       if (cmp != 0) return cmp;
@@ -170,19 +193,19 @@ class _ListaCuidadoresViewState extends State<ListaCuidadoresView> {
     return copia;
   }
 
-  static List<ProfesionalListaItem> _ordenarLista(
-    List<ProfesionalListaItem> lista,
+  static List<ProfesionalEntity> _ordenarLista(
+    List<ProfesionalEntity> lista,
     String? necesidadPaciente,
     bool altaComplejidad,
   ) {
-    final copia = List<ProfesionalListaItem>.from(lista);
+    final copia = List<ProfesionalEntity>.from(lista);
     copia.sort((a, b) {
-      final pa = prioridadBandejaParaNecesidad(a.bandeja, necesidadPaciente);
-      final pb = prioridadBandejaParaNecesidad(b.bandeja, necesidadPaciente);
+      final pa = prioridadBandejaParaNecesidad(_bandejaDesdeTipo(a.tipo), necesidadPaciente);
+      final pb = prioridadBandejaParaNecesidad(_bandejaDesdeTipo(b.tipo), necesidadPaciente);
       if (pa != pb) return pa.compareTo(pb);
       if (altaComplejidad) {
-        if (a.semaforoConfianzaVerde != b.semaforoConfianzaVerde) {
-          return a.semaforoConfianzaVerde ? -1 : 1;
+        if (a.identidadValidada != b.identidadValidada) {
+          return a.identidadValidada ? -1 : 1;
         }
       }
       return a.nombre.compareTo(b.nombre);
@@ -245,15 +268,15 @@ class _ListaCuidadoresViewState extends State<ListaCuidadoresView> {
                 final km = distanciaKmHaversine(
                   refFamiliar.lat,
                   refFamiliar.lon,
-                  p.latitud,
-                  p.longitud,
+                  p.latitud ?? refFamiliar.lat,
+                  p.longitud ?? refFamiliar.lon,
                 );
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 14),
                   child: _TarjetaProfesional(
                     item: p,
                     distanciaKm: km,
-                    destacado: altaComplejidad && p.semaforoConfianzaVerde,
+                    destacado: altaComplejidad && p.identidadValidada,
                     pacienteAltaComplejidad: altaComplejidad,
                   ),
                 );
@@ -551,7 +574,7 @@ class _TarjetaProfesional extends StatelessWidget {
     required this.pacienteAltaComplejidad,
   });
 
-  final ProfesionalListaItem item;
+  final ProfesionalEntity item;
   final double distanciaKm;
   final bool destacado;
   final bool pacienteAltaComplejidad;
@@ -572,7 +595,7 @@ class _TarjetaProfesional extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final b = item.bandeja;
+    final b = _bandejaDesdeTipo(item.tipo);
 
     return Container(
       decoration: BoxDecoration(
@@ -671,7 +694,7 @@ class _TarjetaProfesional extends StatelessWidget {
                           color: Colors.grey.shade800,
                         ),
                       ),
-                      if (item.semaforoConfianzaVerde) ...[
+                      if (item.identidadValidada) ...[
                         const SizedBox(height: 8),
                         Row(
                           children: [
@@ -700,7 +723,7 @@ class _TarjetaProfesional extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      _FilaUbicacionDiscreta(zona: item.zona, distanciaKm: distanciaKm),
+                      _FilaUbicacionDiscreta(zona: item.zona ?? 'Zona no informada', distanciaKm: distanciaKm),
                       const SizedBox(height: 8),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -715,7 +738,7 @@ class _TarjetaProfesional extends StatelessWidget {
                           ),
                           Expanded(
                             child: Text(
-                              item.fuerte,
+                              item.fortaleza ?? '',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontStyle: FontStyle.italic,

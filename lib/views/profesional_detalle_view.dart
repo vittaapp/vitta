@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../models/bandeja_perfil_profesional.dart';
+import '../models/entities/profesional_entity.dart';
 import '../models/perfil_paciente_registro.dart';
-import '../models/profesional_lista_item.dart';
 import '../utils/geo_tucuman.dart';
+
+BandejaPerfilProfesional _bandejaDesdeTipo(TipoProfesional tipo) {
+  switch (tipo) {
+    case TipoProfesional.enfermeroUniversitario:
+      return BandejaPerfilProfesional.verde;
+    case TipoProfesional.auxiliarEnfermeria:
+      return BandejaPerfilProfesional.amarillo;
+    case TipoProfesional.cuidadorDomiciliario:
+      return BandejaPerfilProfesional.celeste;
+  }
+}
 
 /// Ficha del profesional: contacto solo vía app (sin teléfono).
 class ProfesionalDetalleView extends StatelessWidget {
@@ -13,7 +24,7 @@ class ProfesionalDetalleView extends StatelessWidget {
     required this.pacienteAltaComplejidad,
   });
 
-  final ProfesionalListaItem item;
+  final ProfesionalEntity item;
   final bool pacienteAltaComplejidad;
 
   static const Color _azul = Color(0xFF0D47A1);
@@ -34,8 +45,8 @@ class ProfesionalDetalleView extends StatelessWidget {
           final km = distanciaKmHaversine(
             ref.lat,
             ref.lon,
-            item.latitud,
-            item.longitud,
+            item.latitud ?? ref.lat,
+            item.longitud ?? ref.lon,
           );
 
           return CustomScrollView(
@@ -118,7 +129,7 @@ class ProfesionalDetalleView extends StatelessWidget {
                       _filaUbicacion(km),
                       const SizedBox(height: 14),
                       Text(
-                        item.fuerte,
+                        item.fortaleza ?? '',
                         style: TextStyle(
                           fontSize: 15,
                           fontStyle: FontStyle.italic,
@@ -142,7 +153,7 @@ class ProfesionalDetalleView extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        item.biografia,
+                        item.biografia ?? '',
                         style: TextStyle(
                           fontSize: 15,
                           height: 1.45,
@@ -325,7 +336,7 @@ class ProfesionalDetalleView extends StatelessWidget {
         const SizedBox(width: 6),
         Expanded(
           child: Text(
-            '${item.zona} • a ${km.toStringAsFixed(1)} km',
+            '${item.zona ?? 'Zona no informada'} • a ${km.toStringAsFixed(1)} km',
             style: TextStyle(
               fontSize: 14,
               height: 1.35,
@@ -359,7 +370,7 @@ class ProfesionalDetalleView extends StatelessWidget {
   }
 
   Widget _bloqueBandejaYConfianza() {
-    final b = item.bandeja;
+    final b = _bandejaDesdeTipo(item.tipo);
 
     return Container(
       width: double.infinity,
@@ -426,7 +437,7 @@ class ProfesionalDetalleView extends StatelessWidget {
               ),
             ],
           ),
-          if (item.semaforoConfianzaVerde) ...[
+          if (item.identidadValidada) ...[
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

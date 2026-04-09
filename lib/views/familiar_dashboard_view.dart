@@ -12,7 +12,7 @@ import 'package:vitta_app/widgets/dashboard/my_patients_card_widget.dart';
 import 'package:vitta_app/widgets/dashboard/access_card_widget.dart';
 
 import '../constants/contacto_vitta.dart';
-import '../models/paciente_firestore.dart';
+import '../models/entities/paciente_entity.dart';
 import '../models/usuario_model.dart';
 import '../providers/paciente_principal_provider.dart';
 import '../providers/usuario_rol_provider.dart';
@@ -146,7 +146,7 @@ class _FamiliarDashboardViewState extends ConsumerState<FamiliarDashboardView> {
             ),
           ),
         ),
-        data: (PacienteFirestore? paciente) {
+        data: (PacienteEntity? paciente) {
           if (paciente == null) {
             return OnboardingFamiliarBienvenidaWidget(
               onRegistroExitoso: () {

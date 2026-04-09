@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../models/paciente_firestore.dart';
+import '../models/entities/paciente_entity.dart';
 import '../services/turno_service.dart';
 
 const Color _kAzulVitta = Color(0xFF1A3E6F);
@@ -19,7 +19,7 @@ class SolicitarTurnoView extends ConsumerStatefulWidget {
     required this.paciente,
   });
 
-  final PacienteFirestore paciente;
+  final PacienteEntity paciente;
 
   @override
   ConsumerState<SolicitarTurnoView> createState() => _SolicitarTurnoViewState();
@@ -330,7 +330,7 @@ class _TarjetaResumenPaciente extends StatelessWidget {
     required this.diagnostico,
   });
 
-  final PacienteFirestore paciente;
+  final PacienteEntity paciente;
   final int nivel;
   final String? diagnostico;
 

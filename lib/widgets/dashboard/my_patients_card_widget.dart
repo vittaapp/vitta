@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/paciente_firestore.dart';
+import '../../models/entities/paciente_entity.dart';
 import '../../views/perfil_paciente_familiar_view.dart';
 import '../../views/registro_paciente_view.dart';
 
@@ -21,7 +21,7 @@ class MyPatientsCardWidget extends StatelessWidget {
     required this.onRegistrado,
   }) : super(key: key);
 
-  final PacienteFirestore? paciente;
+  final PacienteEntity? paciente;
   final VoidCallback onRegistrado;
 
   @override

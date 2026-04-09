@@ -1,7 +1,8 @@
 // lib/views/seleccion_profesional_view.dart
 import 'package:flutter/material.dart';
-import '../models/profesional_model.dart';
-import '../models/paciente_model.dart';
+import '../models/domain/profesional_domain.dart';
+import '../models/domain/paciente_domain.dart';
+import '../models/entities/profesional_entity.dart';
 
 class SeleccionProfesionalView extends StatelessWidget {
   final NivelRiesgo riesgoDelPaciente;
@@ -11,10 +12,10 @@ class SeleccionProfesionalView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Simulamos una lista de profesionales que se postularon
-    final List<Profesional> disponibles = [
-      Profesional(id: "1", nombre: "Lic. Marcos Paz", tipo: TipoProfesional.enfermeroUniversitario, matricula: "1234"),
-      Profesional(id: "2", nombre: "Ana Torres", tipo: TipoProfesional.cuidadorDomiciliario),
-      Profesional(id: "3", nombre: "Sra. Betty", tipo: TipoProfesional.auxiliarEnfermeria, matricula: "5566"),
+    final List<ProfesionalDomain> disponibles = [
+      ProfesionalDomain(id: "1", nombre: "Lic. Marcos Paz", email: "", rol: "profesional", tipo: TipoProfesional.enfermeroUniversitario, matriculaProfesional: "1234"),
+      ProfesionalDomain(id: "2", nombre: "Ana Torres", email: "", rol: "profesional", tipo: TipoProfesional.cuidadorDomiciliario),
+      ProfesionalDomain(id: "3", nombre: "Sra. Betty", email: "", rol: "profesional", tipo: TipoProfesional.auxiliarEnfermeria, matriculaProfesional: "5566"),
     ];
 
     return Scaffold(
@@ -33,7 +34,7 @@ class SeleccionProfesionalView extends StatelessWidget {
                 final pro = disponibles[index];
 
                 // AQUÍ USAMOS LA LÓGICA DE SEGURIDAD
-                bool esApto = pro.puedeAtenderRiesgo(riesgoDelPaciente);
+                bool esApto = pro.puedeAtenderRiesgo(riesgoDelPaciente.name);
 
                 return ListTile(
                   leading: const CircleAvatar(child: Icon(Icons.medical_services)),

@@ -4,12 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vitta_app/widgets/dashboard/onboarding_familiar_widget.dart';
 import 'package:vitta_app/widgets/dashboard/dashboard_header_widget.dart';
-import 'package:vitta_app/widgets/dashboard/emergency_button_widget.dart';
 import 'package:vitta_app/widgets/dashboard/service_status_widget.dart';
 import 'package:vitta_app/widgets/dashboard/daily_resumen_widget.dart';
 import 'package:vitta_app/widgets/dashboard/recent_bitacora_widget.dart';
 import 'package:vitta_app/widgets/dashboard/my_patients_card_widget.dart';
 import 'package:vitta_app/widgets/dashboard/access_card_widget.dart';
+import 'package:vitta_app/widgets/dashboard/solicitar_turno_card_widget.dart';
+import 'package:vitta_app/widgets/dashboard/emergency_contact_widget.dart';
 
 import '../constants/contacto_vitta.dart';
 import '../models/entities/paciente_entity.dart';
@@ -161,23 +162,33 @@ class _FamiliarDashboardViewState extends ConsumerState<FamiliarDashboardView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // 1. Header
                 const DashboardHeaderWidget(),
-                EmergencyButtonWidget(
-                  onPressed: () => _snack(
-                    context,
-                    'Buscando enfermeros N3 disponibles cerca tuyo...',
-                  ),
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // 2. Estado del servicio activo
                 ServiceStatusWidget(
                   onLlamarSoporte: () => _llamarSoporteVitta(context),
                   nombrePaciente: paciente.nombre,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
+
+                // 3. ACCIÓN PRINCIPAL — Solicitar turno (prominente, arriba)
+                const SolicitarTurnoCardWidget(),
+
+                // 4. Emergencia — Soporte 24/7 (visible pero secundario)
+                const EmergencyContactWidget(),
+                const SizedBox(height: 8),
+
+                // 5. Bitácora reciente
                 RecentBitacoraWidget(pacienteId: paciente.id),
                 const SizedBox(height: 14),
+
+                // 6. Resumen diario
                 DailyResumenWidget(pacienteId: paciente.id),
                 const SizedBox(height: 14),
+
+                // 7. Soporte info
                 _Soporte247(
                   onTap: () => _snack(
                     context,
@@ -185,6 +196,8 @@ class _FamiliarDashboardViewState extends ConsumerState<FamiliarDashboardView> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // 8. Suscripción y planes
                 _TarjetaSuscripcion(
                   planActivo: paciente.planActivo,
                   onVerPlanes: () {

@@ -16,6 +16,7 @@ import '../models/entities/paciente_entity.dart';
 import '../models/usuario_model.dart';
 import '../providers/paciente_principal_provider.dart';
 import '../providers/usuario_rol_provider.dart';
+import '../utils/plan_nivel_mapper.dart';
 import 'lista_cuidadores_view.dart';
 import 'login_view.dart';
 import 'solicitar_turno_view.dart';
@@ -485,9 +486,21 @@ class _TarjetaSuscripcion extends StatelessWidget {
               'Plan actual: $etiqueta — accedé a perfiles según tu nivel.',
               style: TextStyle(fontSize: 12, height: 1.35, color: Colors.grey.shade700),
             ),
+            const SizedBox(height: 4),
+            Text(
+              PlanNivelMapper.obtenerDescripcion(planActivo ?? 'acompañamiento'),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+                color: _kAzulVitta.withValues(alpha: 0.75),
+              ),
+            ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
-              onPressed: onSolicitarTurno,
+              onPressed: planActivo == null
+                  ? null
+                  : onSolicitarTurno,
               icon: const Icon(Icons.add_circle_rounded, color: _kAzulVitta, size: 22),
               label: const Text(
                 'Solicitar turno',

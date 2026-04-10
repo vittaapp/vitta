@@ -173,12 +173,12 @@ class TurnoService {
         .snapshots();
   }
 
-  /// Turnos del familiar, más recientes primero.
+  /// Turnos activos/pendientes/aceptados del familiar.
+  /// Sin orderBy para evitar índice compuesto en Firestore.
   Stream<QuerySnapshot<Map<String, dynamic>>> obtenerTurnosFamiliar(String familiarId) {
     return _db
         .collection(coleccionTurnos)
         .where('familiarId', isEqualTo: familiarId)
-        .orderBy('createdAt', descending: true)
         .snapshots();
   }
 

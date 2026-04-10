@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../models/entities/paciente_entity.dart';
 import '../services/turno_service.dart';
+import '../utils/plan_nivel_mapper.dart';
 
 const Color _kAzulVitta = Color(0xFF1A3E6F);
 const double _kAlturaBotonMin = 56;
@@ -76,7 +77,9 @@ class _SolicitarTurnoViewState extends ConsumerState<SolicitarTurnoView> {
     if (!_formKey.currentState!.validate()) return;
 
     final paciente = widget.paciente;
-    final nivel = paciente.nivelCuidado ?? 1;
+    final nivel = PlanNivelMapper.obtenerNivelSegunPlan(
+      paciente.planActivo ?? 'acompañamiento',
+    );
 
     setState(() => _guardando = true);
     try {
@@ -137,7 +140,12 @@ class _SolicitarTurnoViewState extends ConsumerState<SolicitarTurnoView> {
   @override
   Widget build(BuildContext context) {
     final paciente = widget.paciente;
-    final nivel = paciente.nivelCuidado ?? 1;
+    final nivel = PlanNivelMapper.obtenerNivelSegunPlan(
+      paciente.planActivo ?? 'acompañamiento',
+    );
+    final descripcionNivel = PlanNivelMapper.obtenerDescripcion(
+      paciente.planActivo ?? 'acompañamiento',
+    );
     final diagnostico = paciente.diagnostico?.trim();
 
     return Scaffold(
@@ -161,6 +169,7 @@ class _SolicitarTurnoViewState extends ConsumerState<SolicitarTurnoView> {
                 paciente: paciente,
                 nivel: nivel,
                 diagnostico: diagnostico,
+                descripcionNivel: descripcionNivel,
               ),
               const SizedBox(height: 18),
               Text(
@@ -328,11 +337,13 @@ class _TarjetaResumenPaciente extends StatelessWidget {
     required this.paciente,
     required this.nivel,
     required this.diagnostico,
+    required this.descripcionNivel,
   });
 
   final PacienteEntity paciente;
   final int nivel;
   final String? diagnostico;
+  final String descripcionNivel;
 
   static String _nivelTexto(int nivel) {
     switch (nivel) {
@@ -400,6 +411,16 @@ class _TarjetaResumenPaciente extends StatelessWidget {
               fontWeight: FontWeight.w700,
               color: Colors.grey.shade800,
               height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Buscando: $descripcionNivel',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _kAzulVitta.withValues(alpha: 0.8),
+              height: 1.3,
             ),
           ),
           const SizedBox(height: 6),

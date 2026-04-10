@@ -5,6 +5,7 @@ import '../models/registro_historial_clinico.dart';
 import '../services/historial_service.dart';
 
 /// Últimos 20 registros de `historial_clinico` para el paciente, tiempo real, `fecha` descendente.
+/// Ordena en memoria para evitar requerir índice compuesto en Firestore.
 final bitacoraProvider =
     StreamProvider.autoDispose.family<List<RegistroHistorialClinico>, String>(
   (ref, pacienteId) {
@@ -16,18 +17,22 @@ final bitacoraProvider =
     return FirebaseFirestore.instance
         .collection(HistorialService.coleccionHistorial)
         .where('pacienteId', isEqualTo: pacienteId)
-        .orderBy('fecha', descending: true)
         .limit(20)
         .snapshots()
         .map(
-          (snap) => snap.docs
-              .map((d) => RegistroHistorialClinico.fromMap(d.id, d.data()))
-              .toList(),
+          (snap) {
+            final lista = snap.docs
+                .map((d) => RegistroHistorialClinico.fromMap(d.id, d.data()))
+                .toList()
+              ..sort((a, b) => b.fecha.compareTo(a.fecha));
+            return lista;
+          },
         );
   },
 );
 
 /// Misma consulta sin tope para la pantalla de historial completo.
+/// Ordena en memoria para evitar requerir índice compuesto en Firestore.
 final historialClinicoCompletoProvider =
     StreamProvider.autoDispose.family<List<RegistroHistorialClinico>, String>(
   (ref, pacienteId) {
@@ -39,12 +44,15 @@ final historialClinicoCompletoProvider =
     return FirebaseFirestore.instance
         .collection(HistorialService.coleccionHistorial)
         .where('pacienteId', isEqualTo: pacienteId)
-        .orderBy('fecha', descending: true)
         .snapshots()
         .map(
-          (snap) => snap.docs
-              .map((d) => RegistroHistorialClinico.fromMap(d.id, d.data()))
-              .toList(),
+          (snap) {
+            final lista = snap.docs
+                .map((d) => RegistroHistorialClinico.fromMap(d.id, d.data()))
+                .toList()
+              ..sort((a, b) => b.fecha.compareTo(a.fecha));
+            return lista;
+          },
         );
   },
 );

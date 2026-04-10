@@ -177,6 +177,33 @@ class ServiceStatusWidget extends StatelessWidget {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: TurnoService().obtenerTurnosFamiliar(uid),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.orange.shade300, width: 2),
+            ),
+            child: Text(
+              'No se pudo cargar el estado del servicio. Intentá más tarde.',
+              style: TextStyle(color: Colors.orange.shade800),
+            ),
+          );
+        }
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const SizedBox(
+            height: 80,
+            child: Center(
+              child: CircularProgressIndicator(
+                color: _kAzulVitta,
+                strokeWidth: 2,
+              ),
+            ),
+          );
+        }
         final allDocs = snapshot.data?.docs ?? [];
         final docs = allDocs.where((d) {
           final estado = (d.data()['estado'] as String?) ?? '';
